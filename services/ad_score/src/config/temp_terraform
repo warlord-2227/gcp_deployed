@@ -1,0 +1,108 @@
+# Check if the first Pub/Sub topic already exists
+data "google_pubsub_topic" "existing_brkfst_topic" {
+  count = var.create_brkfst_topic ? 1 : 0
+  name  = "brkfst-googlepubsubtopic-dev"
+}
+
+# Create the first Pub/Sub topic if it doesn't exist
+resource "google_pubsub_topic" "brkfst_googlepubsubtopic_dev" {
+  count = var.create_brkfst_topic && length(data.google_pubsub_topic.existing_brkfst_topic) == 0 ? 1 : 0
+  name  = "brkfst-googlepubsubtopic-dev"
+}
+
+# Check if the first Pub/Sub subscription already exists
+data "google_pubsub_subscription" "existing_brkfst_subscription" {
+  count = var.create_brkfst_subscription ? 1 : 0
+  name  = "brkfst-googlepubsubtopic-dev-sub"
+}
+
+# Create the first Pub/Sub subscription if it doesn't exist
+resource "google_pubsub_subscription" "brkfst_googlepubsubtopic_dev_sub" {
+  count = var.create_brkfst_subscription && length(data.google_pubsub_subscription.existing_brkfst_subscription) == 0 ? 1 : 0
+  name  = "brkfst-googlepubsubtopic-dev-sub"
+  topic = length(data.google_pubsub_topic.existing_brkfst_topic) > 0 ? google_pubsub_topic.brkfst_googlepubsubtopic_dev[0].name : null
+}
+
+# Check if the second Pub/Sub topic already exists
+data "google_pubsub_topic" "existing_pubsub_topic" {
+  count = var.create_pubsub_topic ? 1 : 0
+  name  = "pubsub-ad_score-meta-dev"
+}
+
+# Create the second Pub/Sub topic if it doesn't exist
+resource "google_pubsub_topic" "pubsub_ad_score_meta_dev" {
+  count = var.create_pubsub_topic && length(data.google_pubsub_topic.existing_pubsub_topic) == 0 ? 1 : 0
+  name  = "pubsub-ad_score-meta-dev"
+}
+
+# Check if the second Pub/Sub subscription already exists
+data "google_pubsub_subscription" "existing_pubsub_subscription" {
+  count = var.create_pubsub_subscription ? 1 : 0
+  name  = "pubsub-ad_score-meta-dev-sub"
+}
+
+# Create the second Pub/Sub subscription if it doesn't exist
+resource "google_pubsub_subscription" "pubsub_ad_score_meta_dev_sub" {
+  count = var.create_pubsub_subscription && length(data.google_pubsub_subscription.existing_pubsub_subscription) == 0 ? 1 : 0
+  name  = "pubsub-ad_score-meta-dev-sub"
+  topic = length(data.google_pubsub_topic.existing_pubsub_topic) > 0 ? google_pubsub_topic.pubsub_ad_score_meta_dev[0].name : null
+}
+
+
+
+data "google_cloudfunctions_function" "existing_cloud_function" {
+  count = var.create_cloud_function ? 1 : 0
+  name  = "temp-brkfst-googlecloudfunction-ad-health"
+}
+
+
+resource "google_storage_bucket_object" "cloud_function_files" {
+  name   = "cloud_function_code"
+  bucket = google_storage_bucket.bucket.name
+  source = "../src/functions"
+}
+resource "google_storage_bucket_object" "model_files" {
+  name   = "model_files"
+  bucket = google_storage_bucket.bucket.name
+  source = "../src/model"
+}
+
+# Google Cloud Function Resource
+resource "google_cloudfunctions_function" "brkfst_googlecloudfunction_ad_health" {
+  count       = var.create_cloud_function && length(data.google_cloudfunctions_function.existing_cloud_function) == 0 ? 1 : 0
+  name               = "temp-brkfst-googlecloudfunction-ad-health"
+  runtime            = "python310"
+  source_archive_bucket = google_storage_bucket.bucket.name
+  depends_on         = [google_storage_bucket_object.cloud_function_files]
+  source_archive_object = "cloud_function_code/"  # Path relative to the root of your GitHub repo
+  entry_point        = "main"
+  trigger_http       = false
+
+  # Event trigger configuration
+  event_trigger {
+    event_type = "google.pubsub.topic.publish"
+    resource   = google_pubsub_topic.brkfst_googlepubsubtopic_dev[count.index].id
+  }
+
+
+  # Configure logging for the Cloud Function
+  #logging {
+  #  source   = "cloudfunctions.googleapis.com/cloud-functions"
+  #  severity = "DEBUG"
+  #}
+
+  # Configure timeouts for the Cloud Function
+  #timeouts {
+  #  execution  = "10s"
+  #  deployment = "5m"
+  #}
+
+  # Set IAM policy binding for the Cloud Function
+  #iam_policy {
+   # binding {
+     # role    = "roles/cloudfunctions.invoker"
+     # members = ["serviceAccount:${google_service_account.default.email}"]
+    #}
+ #}
+  
+}

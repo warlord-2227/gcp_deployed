@@ -1,0 +1,8 @@
+functions-framework==3.*
+numpy
+pandas
+joblib
+google-cloud-storage
+google-cloud-pubsub
+google-cloud-logging
+scikit-learn==1.2.2

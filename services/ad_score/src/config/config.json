@@ -1,0 +1,39 @@
+{
+  "split_data": {
+    "test_size": 0.2,
+    "random_state": 42
+  },
+  "train_model": {
+    "n_estimators": 15,
+    "random_state": 42
+  },
+  "save_model": {
+    "model_file_path": "merlin-prod-ad_scoring-meta-brkfst-1.pkl"
+  },
+  "load_model": {
+    "bucket_name": "sd_storage-ad_score-meta-dev"
+  },
+  "upload_to_storage_output": {
+    "bucket_name": "sd_storage-ad_score-meta-dev",
+    "folder_name": "ad_performance_output"
+  },
+  "upload_to_storage_input": {
+    "bucket_name": "sd_storage-ad_score-meta-dev",
+    "folder_name": "ad_performance_input"
+  },
+  "upload_to_storage_eval": {
+    "bucket_name": "sd_storage-ad_score-meta-dev",
+    "folder_name": "ad_performance_eval"
+  },
+  "calculate_scores": {
+    "conf_good_okay": 0.8,
+    "conf_good": 0.6,
+    "case_1_lb": 0.8,
+    "case_1_ub": 1,
+    "case_2_lb": 0.75,
+    "case_2_ub": 0.8,
+    "case_3_lb": 0.55,
+    "case_3_ub": 0.74
+  },
+  "version": "1.0.0"
+}
