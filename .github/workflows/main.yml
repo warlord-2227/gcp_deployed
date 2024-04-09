@@ -2,7 +2,8 @@ name: 'Terraform CI'
 
 on:
   push:
-    branches: ["main"]
+    branches:
+      - test_main
   pull_request:
 
 jobs:
