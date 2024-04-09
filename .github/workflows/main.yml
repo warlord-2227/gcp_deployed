@@ -2,8 +2,7 @@ name: 'Terraform CI'
 
 on:
   push:
-    branches:
-      - test_main
+    branches: ["main"]
   pull_request:
 
 jobs:
@@ -52,7 +51,5 @@ jobs:
         env:
           GOOGLE_APPLICATION_CREDENTIALS: ${{ secrets.GCP_SA_KEY }}
 
-      - name: Cleanup
-        run: |
-          rm -rf $HOME/.config/gcloud
+                                                                                                                                                                                                 1,1           Top
 
